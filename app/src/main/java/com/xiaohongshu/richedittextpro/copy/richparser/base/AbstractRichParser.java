@@ -195,7 +195,7 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
             String content = getContent4Server(richStr);
 
             RichItemBean richItemBean = RichItemBean.createRichItem(type, content);
-            if (mTargetRichItems.contains(richItemBean)) {
+            if (mTargetRichItems.isEmpty() || mTargetRichItems.contains(richItemBean)) {
                 return true;
             }
         }
@@ -213,7 +213,7 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
             String content = getContent4Server(richStr);
 
             RichItemBean richItemBean = RichItemBean.createRichItem(type, content);
-            if (mTargetRichItems.contains(richItemBean)) {
+            if (mTargetRichItems.isEmpty() || mTargetRichItems.contains(richItemBean)) {
                 return richStr;
             }
         }
