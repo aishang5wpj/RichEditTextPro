@@ -3,7 +3,6 @@ package com.xiaohongshu.richedittextpro.copy.richparser.base;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextPaint;
@@ -16,7 +15,8 @@ import android.view.View;
 import com.xiaohongshu.richedittextpro.copy.VerticalImageSpan;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +30,7 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
     private SpannableStringBuilder mSsb;
     private OnSpannableClickListener mOnClickListener;
     private List<RichItemBean> mTargetRichItems = new ArrayList<>();
+    private static final ImageSpanComparator IMAGE_SPAN_COMPARATOR = new ImageSpanComparator();
 
     public AbstractRichParser() {
         this(null);
@@ -98,7 +99,12 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
     @Override
     public SpannableStringBuilder getFirstRichSpannable() {
         ImageSpan[] imageSpen = mSsb.getSpans(0, mSsb.length(), ImageSpan.class);
-        if (null != imageSpen && imageSpen.length > 0) {
+        if (imageSpen == null){
+            return new SpannableStringBuilder();
+        }
+        IMAGE_SPAN_COMPARATOR.setSsb(mSsb);
+        Arrays.sort(imageSpen, IMAGE_SPAN_COMPARATOR);
+        if (imageSpen.length > 0) {
             for (ImageSpan imageSpan : imageSpen) {
 
                 int imageStart = mSsb.getSpanStart(imageSpan);
@@ -139,9 +145,13 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
     @Override
     public SpannableStringBuilder getLastRichSpannable() {
         ImageSpan[] imageSpen = mSsb.getSpans(0, mSsb.length(), ImageSpan.class);
-        if (null != imageSpen && imageSpen.length > 0) {
+        if (imageSpen == null) {
+            return new SpannableStringBuilder();
+        }
+        IMAGE_SPAN_COMPARATOR.setSsb(mSsb);
+        Arrays.sort(imageSpen, IMAGE_SPAN_COMPARATOR);
+        if (imageSpen.length > 0) {
             for (int i = imageSpen.length - 1; i >= 0; i--) {
-
                 int imageStart = mSsb.getSpanStart(imageSpen[i]);
                 ForegroundColorSpan[] colorSpen = mSsb.getSpans(imageStart, mSsb.length(), ForegroundColorSpan.class);
                 if (colorSpen != null && colorSpen.length > 0) {
@@ -306,5 +316,21 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
             return context.getDrawable(drawableId);
         }
         return context.getResources().getDrawable(drawableId);
+    }
+
+    static class ImageSpanComparator implements Comparator<ImageSpan> {
+
+        public void setSsb(SpannableStringBuilder ssb) {
+            this.mSsb = ssb;
+        }
+
+        private SpannableStringBuilder mSsb;
+
+        @Override
+        public int compare(ImageSpan lhs, ImageSpan rhs) {
+            int index0 = mSsb.getSpanStart(lhs);
+            int index1 = mSsb.getSpanStart(rhs);
+            return (index0 - index1);
+        }
     }
 }
