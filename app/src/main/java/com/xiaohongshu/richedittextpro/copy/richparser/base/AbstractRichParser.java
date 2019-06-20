@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
+import android.util.Pair;
 import android.view.View;
 
 import com.xiaohongshu.richedittextpro.copy.VerticalImageSpan;
@@ -26,8 +27,6 @@ import java.util.regex.Pattern;
  */
 public abstract class AbstractRichParser implements IRichParser4Local, IRichParser4Server, IRichParserAdapter {
 
-    private String mStr;
-    private SpannableStringBuilder mSsb;
     private OnSpannableClickListener mOnClickListener;
     private List<RichItemBean> mTargetRichItems = new ArrayList<>();
     private static final ImageSpanComparator IMAGE_SPAN_COMPARATOR = new ImageSpanComparator();
@@ -48,33 +47,30 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
 
     ////////////////////////////////////////////////////////// 下面是为Local提供的各种操作 ///////////////////////////////////////////////////////////////
 
-    @Override
-    public void setSpannable(SpannableStringBuilder ssb) {
-        mSsb = ssb;
-    }
-
     /**
      * 富文本中包含ImageSpan或者ColorSpan并不说明包含一个完整的富文本
      * ,有可能这个富文本被截断了(用户点击富文本时,光标落在富文本中间时的情况)
      *
+     * @param spannableStringBuilder
      * @return
      */
     @Override
-    public boolean containsRichSpannable() {
+    public boolean containsRichSpannable(SpannableStringBuilder spannableStringBuilder) {
 
-        ImageSpan[] imageSpen = mSsb.getSpans(0, mSsb.length(), ImageSpan.class);
+        SpannableStringBuilder ssb = spannableStringBuilder;
+        ImageSpan[] imageSpen = ssb.getSpans(0, ssb.length(), ImageSpan.class);
         if (null != imageSpen && imageSpen.length > 0) {
             for (ImageSpan imageSpan : imageSpen) {
 
-                int imageStart = mSsb.getSpanStart(imageSpan);
-                ForegroundColorSpan[] colorSpen = mSsb.getSpans(imageStart, mSsb.length(), ForegroundColorSpan.class);
+                int imageStart = ssb.getSpanStart(imageSpan);
+                ForegroundColorSpan[] colorSpen = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
                 if (colorSpen != null && colorSpen.length > 0) {
                     for (ForegroundColorSpan colorSpan : colorSpen) {
 
                         //从ColorSpan中解析出来的内容信息
-                        int colorStart = mSsb.getSpanStart(colorSpan);
-                        int colorEnd = mSsb.getSpanEnd(colorSpan);
-                        CharSequence charSequence = mSsb.subSequence(colorStart, colorEnd);
+                        int colorStart = ssb.getSpanStart(colorSpan);
+                        int colorEnd = ssb.getSpanEnd(colorSpan);
+                        CharSequence charSequence = ssb.subSequence(colorStart, colorEnd);
                         //ImageSpan中包含的content信息
                         String source = imageSpan.getSource();
                         RichItemBean itemBean = RichItemBean.parseRichItem(source);
@@ -94,110 +90,102 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
      * 可能拿到不完整的富文本!!
      * 用ImageSpan中的source转成RichItemBean,来判断是不完整的富文本
      *
+     * @param spannableStringBuilder
      * @return
      */
     @Override
-    public SpannableStringBuilder getFirstRichSpannable() {
-        ImageSpan[] imageSpen = mSsb.getSpans(0, mSsb.length(), ImageSpan.class);
-        if (imageSpen == null){
-            return new SpannableStringBuilder();
+    public Pair<Integer, SpannableStringBuilder> getFirstRichSpannable(SpannableStringBuilder spannableStringBuilder) {
+        SpannableStringBuilder ssb = spannableStringBuilder;
+        ImageSpan[] imageSpen = ssb.getSpans(0, ssb.length(), ImageSpan.class);
+        if (imageSpen == null) {
+            return null;
         }
-        IMAGE_SPAN_COMPARATOR.setSsb(mSsb);
+        IMAGE_SPAN_COMPARATOR.setSsb(ssb);
         Arrays.sort(imageSpen, IMAGE_SPAN_COMPARATOR);
         if (imageSpen.length > 0) {
             for (ImageSpan imageSpan : imageSpen) {
 
-                int imageStart = mSsb.getSpanStart(imageSpan);
-                ForegroundColorSpan[] colorSpen = mSsb.getSpans(imageStart, mSsb.length(), ForegroundColorSpan.class);
+                int imageStart = ssb.getSpanStart(imageSpan);
+                ForegroundColorSpan[] colorSpen = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
                 if (colorSpen != null && colorSpen.length > 0) {
                     for (ForegroundColorSpan colorSpan : colorSpen) {
 
                         //从ColorSpan中解析出来的内容信息
-                        int colorStart = mSsb.getSpanStart(colorSpan);
-                        int colorEnd = mSsb.getSpanEnd(colorSpan);
-                        CharSequence charSequence = mSsb.subSequence(colorStart, colorEnd);
+                        int colorStart = ssb.getSpanStart(colorSpan);
+                        int colorEnd = ssb.getSpanEnd(colorSpan);
+                        CharSequence charSequence = ssb.subSequence(colorStart, colorEnd);
                         //ImageSpan中包含的content信息
                         String source = imageSpan.getSource();
                         RichItemBean itemBean = RichItemBean.parseRichItem(source);
                         String richStr = "#" + itemBean.getContent();
                         //如果两个信息相等,说明这是一个完整的富文本
                         if (TextUtils.equals(richStr, charSequence)) {
-                            return (SpannableStringBuilder) charSequence;
+                            int index = ssb.toString().indexOf(charSequence.toString());
+                            return new Pair<>(index, (SpannableStringBuilder) charSequence);
                         }
                     }
                 }
             }
         }
-        return new SpannableStringBuilder();
-    }
-
-    @Override
-    public int getFirstIndex4RichSpannable() {
-        return mSsb.toString().indexOf(getFirstRichSpannable().toString());
+        return null;
     }
 
     /**
      * 可能拿到不完整的富文本!!
      * 用ImageSpan中的source转成RichItemBean,来判断是不完整的富文本
      *
+     * @param spannableStringBuilder
      * @return
      */
     @Override
-    public SpannableStringBuilder getLastRichSpannable() {
-        ImageSpan[] imageSpen = mSsb.getSpans(0, mSsb.length(), ImageSpan.class);
+    public Pair<Integer, SpannableStringBuilder> getLastRichSpannable(SpannableStringBuilder spannableStringBuilder) {
+        SpannableStringBuilder ssb = spannableStringBuilder;
+        ImageSpan[] imageSpen = ssb.getSpans(0, ssb.length(), ImageSpan.class);
         if (imageSpen == null) {
-            return new SpannableStringBuilder();
+            return null;
         }
-        IMAGE_SPAN_COMPARATOR.setSsb(mSsb);
+        IMAGE_SPAN_COMPARATOR.setSsb(ssb);
         Arrays.sort(imageSpen, IMAGE_SPAN_COMPARATOR);
         if (imageSpen.length > 0) {
             for (int i = imageSpen.length - 1; i >= 0; i--) {
-                int imageStart = mSsb.getSpanStart(imageSpen[i]);
-                ForegroundColorSpan[] colorSpen = mSsb.getSpans(imageStart, mSsb.length(), ForegroundColorSpan.class);
+                int imageStart = ssb.getSpanStart(imageSpen[i]);
+                ForegroundColorSpan[] colorSpen = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
                 if (colorSpen != null && colorSpen.length > 0) {
                     for (ForegroundColorSpan colorSpan : colorSpen) {
 
                         //从ColorSpan中解析出来的内容信息
-                        int colorStart = mSsb.getSpanStart(colorSpan);
-                        int colorEnd = mSsb.getSpanEnd(colorSpan);
-                        CharSequence charSequence = mSsb.subSequence(colorStart, colorEnd);
+                        int colorStart = ssb.getSpanStart(colorSpan);
+                        int colorEnd = ssb.getSpanEnd(colorSpan);
+                        CharSequence charSequence = ssb.subSequence(colorStart, colorEnd);
                         //ImageSpan中包含的content信息
                         String source = imageSpen[i].getSource();
                         RichItemBean itemBean = RichItemBean.parseRichItem(source);
                         String richStr = "#" + itemBean.getContent();
                         //如果两个信息相等,说明这是一个完整的富文本
                         if (TextUtils.equals(richStr, charSequence)) {
-                            return (SpannableStringBuilder) charSequence;
+                            int index = ssb.toString().indexOf(charSequence.toString());
+                            return new Pair<>(index, (SpannableStringBuilder) charSequence);
                         }
                     }
                 }
             }
         }
-        return new SpannableStringBuilder();
-    }
-
-    @Override
-    public int getLastIndex4RichSpannable() {
-        return mSsb.toString().indexOf(getLastRichSpannable().toString());
+        return null;
     }
 
     ////////////////////////////////////////////////////////// 下面是为Server提供的各种操作 ///////////////////////////////////////////////////////////////
-
-    @Override
-    public void setString(String str) {
-        mStr = str;
-    }
 
     /**
      * 除了匹配正则表达式,而且还要满足匹配到的富文本在服务器的富文本列表中
      * ,如果匹配到的富文本在服务器中不存在,则不允许高亮
      *
+     * @param str
      * @return
      */
     @Override
-    public boolean containsRichStr4Server() {
+    public boolean containsRichStr4Server(String str) {
         Pattern pattern = Pattern.compile(getPattern4Server());
-        Matcher matcher = pattern.matcher(mStr);
+        Matcher matcher = pattern.matcher(str);
         while (matcher.find()) {
 
             String richStr = matcher.group();
@@ -213,9 +201,9 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
     }
 
     @Override
-    public String getFirstRichStr4Server() {
+    public Pair<Integer, String> getFirstRichStr4Server(String str) {
         Pattern pattern = Pattern.compile(getPattern4Server());
-        Matcher matcher = pattern.matcher(mStr);
+        Matcher matcher = pattern.matcher(str);
         while (matcher.find()) {
 
             String richStr = matcher.group();
@@ -224,16 +212,11 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
 
             RichItemBean richItemBean = RichItemBean.createRichItem(type, content);
             if (mTargetRichItems.isEmpty() || mTargetRichItems.contains(richItemBean)) {
-                return richStr;
+                int index = TextUtils.isEmpty(str) ? -1 : str.indexOf(richStr);
+                return new Pair<>(index, richStr);
             }
         }
-        return "";
-    }
-
-    @Override
-    public int getFirstRichStrIndex4Server() {
-        String str = getFirstRichStr4Server();
-        return TextUtils.isEmpty(str) ? -1 : mStr.indexOf(str);
+        return null;
     }
 
     @Override

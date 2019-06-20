@@ -1,9 +1,9 @@
 package com.xiaohongshu.richedittextpro.copy.richparser;
 
 import android.content.Context;
-import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import com.xiaohongshu.richedittextpro.copy.richparser.base.AbstractRichParser;
 import com.xiaohongshu.richedittextpro.copy.richparser.base.IRichParser4Local;
@@ -35,8 +35,7 @@ public class RichParserManager {
      */
     public boolean containsRichStr(String str) {
         for (IRichParser4Server parser4Server : mParserList) {
-            parser4Server.setString(str);
-            if (parser4Server.containsRichStr4Server()) {
+            if (parser4Server.containsRichStr4Server(str)) {
                 return true;
             }
         }
@@ -51,8 +50,7 @@ public class RichParserManager {
      */
     public boolean containsRichSpannable(SpannableStringBuilder str) {
         for (IRichParser4Local parser4Local : mParserList) {
-            parser4Local.setSpannable(str);
-            if (parser4Local.containsRichSpannable()) {
+            if (parser4Local.containsRichSpannable(str)) {
                 return true;
             }
         }
@@ -67,7 +65,7 @@ public class RichParserManager {
      */
     public SpannableStringBuilder parseStr2Spannable(Context context, String targetStr) {
         final String str = targetStr;
-        if (!RichParserManager.getManager().containsRichStr(str)) {
+        if (!containsRichStr(str)) {
             return new SpannableStringBuilder(str);
         }
         String tempStr = str;
@@ -80,7 +78,7 @@ public class RichParserManager {
             String startStr = tempStr.substring(0, index);
             ssb.append(startStr);
             //rich string
-            ssb.append(formateStr2Spannable(context, richStr));
+            ssb.append(formatStr2Spannable(context, richStr));
             //循环
             tempStr = tempStr.substring(index + richStr.length(), tempStr.length());
             richStr = getFirstRichItem4Str(tempStr);
@@ -91,7 +89,6 @@ public class RichParserManager {
         return ssb;
     }
 
-
     /**
      * SpannableStringBuilder -> String
      *
@@ -100,7 +97,7 @@ public class RichParserManager {
      */
     public String parseSpannable2Str(SpannableStringBuilder spannableStringBuilder) {
         final SpannableStringBuilder str = spannableStringBuilder;
-        if (!RichParserManager.getManager().containsRichSpannable(str)) {
+        if (!containsRichSpannable(str)) {
             return "";
         }
         SpannableStringBuilder tempStr = str;
@@ -113,7 +110,7 @@ public class RichParserManager {
             String startStr = tempStr.subSequence(0, index).toString();
             stringBuilder.append(startStr);
             //rich string
-            stringBuilder.append(formateSpannable2Str(richStr));
+            stringBuilder.append(formatSpannable2Str(richStr));
             //循环
             tempStr = (SpannableStringBuilder) tempStr.subSequence(index + richStr.length(), tempStr.length());
             richStr = getFirstRichItem4Spannable(tempStr);
@@ -130,23 +127,20 @@ public class RichParserManager {
      * @param targetStr
      * @return
      */
-    public String getFirstRichItem4Str(String targetStr) {
+    private String getFirstRichItem4Str(String targetStr) {
 
         final String str = targetStr;
         int index = Integer.MAX_VALUE;
-        IRichParser4Server iRichParser = null;
+        Pair<Integer, String> result = null;
         for (IRichParser4Server richItem : mParserList) {
 
-            //遍历mRichItems进行各种操作时,一定要重置targetStr
-            richItem.setString(str);
-
-            int temp = richItem.getFirstRichStrIndex4Server();
-            if (temp < index && temp != -1) {
-                index = temp;
-                iRichParser = richItem;
+            Pair<Integer, String> temp = richItem.getFirstRichStr4Server(str);
+            if (temp != null && temp.first < index && temp.first != -1) {
+                index = temp.first;
+                result = temp;
             }
         }
-        return iRichParser == null ? "" : iRichParser.getFirstRichStr4Server();
+        return result == null ? "" : result.second;
     }
 
     /**
@@ -159,19 +153,16 @@ public class RichParserManager {
 
         final SpannableStringBuilder str = ssb;
         int index = Integer.MAX_VALUE;
-        IRichParser4Local iRichParser = null;
+        Pair<Integer, SpannableStringBuilder> result = null;
         for (IRichParser4Local richItem : mParserList) {
 
-            //遍历mRichItems进行各种操作时,一定要重置targetStr
-            richItem.setSpannable(str);
-
-            int temp = richItem.getFirstIndex4RichSpannable();
-            if (temp < index && temp != -1) {
-                index = temp;
-                iRichParser = richItem;
+            Pair<Integer, SpannableStringBuilder> temp = richItem.getFirstRichSpannable(str);
+            if (temp != null && temp.first < index && temp.first != -1) {
+                index = temp.first;
+                result = temp;
             }
         }
-        return iRichParser == null ? new SpannableStringBuilder() : iRichParser.getFirstRichSpannable();
+        return result == null ? new SpannableStringBuilder() : result.second;
     }
 
     /**
@@ -184,19 +175,16 @@ public class RichParserManager {
 
         final SpannableStringBuilder str = ssb;
         int index = -1;
-        IRichParser4Local iRichParser = null;
+        Pair<Integer, SpannableStringBuilder> result = null;
         for (IRichParser4Local richItem : mParserList) {
 
-            //遍历mRichItems进行各种操作时,一定要重置targetStr
-            richItem.setSpannable(str);
-
-            int temp = richItem.getLastIndex4RichSpannable();
-            if (temp > index) {
-                index = temp;
-                iRichParser = richItem;
+            Pair<Integer, SpannableStringBuilder> temp = richItem.getLastRichSpannable(str);
+            if (temp != null && temp.first > index) {
+                index = temp.first;
+                result = temp;
             }
         }
-        return iRichParser == null ? new SpannableStringBuilder() : iRichParser.getLastRichSpannable();
+        return result == null ? new SpannableStringBuilder() : result.second;
     }
 
     /**
@@ -204,15 +192,12 @@ public class RichParserManager {
      * @param richStr #[类型]内容#
      * @return #内容
      */
-    private SpannableStringBuilder formateStr2Spannable(Context context, String richStr) {
+    private SpannableStringBuilder formatStr2Spannable(Context context, String richStr) {
 
         final String str = richStr;
         for (AbstractRichParser richItem : mParserList) {
 
-            //遍历mRichItems进行各种操作时,一定要重置targetStr
-            richItem.setString(richStr);
-
-            if (richItem.containsRichStr4Server()) {
+            if (richItem.containsRichStr4Server(str)) {
                 return richItem.parseStr2Spannable(context, richStr);
             }
         }
@@ -223,31 +208,16 @@ public class RichParserManager {
      * @param richStr #内容
      * @return #[类型]内容#
      */
-    private String formateSpannable2Str(SpannableStringBuilder richStr) {
+    private String formatSpannable2Str(SpannableStringBuilder richStr) {
 
         final SpannableStringBuilder str = richStr;
         for (AbstractRichParser richItem : mParserList) {
 
-            //遍历mRichItems进行各种操作时,一定要重置targetStr
-            richItem.setSpannable(richStr);
-
-            if (richItem.containsRichSpannable()) {
-                return richItem.parseSpannable2Str(richStr);
+            if (richItem.containsRichSpannable(str)) {
+                return richItem.parseSpannable2Str(str);
             }
         }
         return "";
-    }
-
-    public boolean isStartWithRichSpannable(SpannableStringBuilder ssb) {
-
-        SpannableStringBuilder spannableStr = getFirstRichItem4Spannable(ssb);
-        return spannableStr.toString().startsWith(spannableStr.toString());
-    }
-
-    public boolean isEndWithRichSpannable(SpannableStringBuilder ssb) {
-
-        SpannableStringBuilder spannableStr = getLastRichItem4Spannable(ssb);
-        return spannableStr.toString().endsWith(spannableStr.toString());
     }
 
     public void registerParser(AbstractRichParser parser) {
