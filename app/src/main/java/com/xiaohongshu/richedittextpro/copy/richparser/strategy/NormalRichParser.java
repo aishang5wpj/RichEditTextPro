@@ -32,7 +32,8 @@ public class NormalRichParser extends AbstractRichParser {
     @Override
     public String getPattern4Server() {
         //￼舍不得
-        return String.format("#[^#\\[\\]]{1,}(\\[%s\\])#", getType4Server());
+//        return String.format("#[^#\\[\\]]{1,}(\\[%s\\])#", getType4Server());
+        return String.format("#\\[\\%s\\]\\[\\w+\\]\\w+#", getType4Server());
     }
 
     @Override
