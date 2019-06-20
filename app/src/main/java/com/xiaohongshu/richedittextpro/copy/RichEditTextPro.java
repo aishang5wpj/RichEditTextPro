@@ -87,10 +87,11 @@ public class RichEditTextPro extends EditText implements View.OnKeyListener {
 
         int startPos = getSelectionStart();
         final SpannableStringBuilder ssb = (SpannableStringBuilder) getText().subSequence(0, startPos);
-        if (!RichParserManager.getManager().containsRichSpannable(ssb)) {
+        final SpannableStringBuilder lastSSB = RichParserManager.getManager().getLastRichItem4Spannable(ssb);
+        if (lastSSB == null) {
             return false;
         }
-        String lastTopic = RichParserManager.getManager().getLastRichItem4Spannable(ssb).toString();
+        String lastTopic = lastSSB.toString();
         return ssb.toString().endsWith(lastTopic);
     }
 
@@ -189,12 +190,13 @@ public class RichEditTextPro extends EditText implements View.OnKeyListener {
 
         //取后面字符串中第一个富文本
         SpannableStringBuilder endStr = (SpannableStringBuilder) getText().subSequence(pos, getText().length());
-        Pair<Integer,SpannableStringBuilder> firstRichSpan = RichParserManager.getManager().getFirstRichItem4Spannable(endStr);
+        Object[] firstRichSpan = RichParserManager.getManager().getFirstRichItem4Spannable(endStr);
         //end默认指向最后
         int end = getText().length();
         //如果点击的是最后面的话题,则richStr可能为空
         if (firstRichSpan != null) {
-            end = startStr.length() + firstRichSpan.first;
+            int index = (int) firstRichSpan[0];
+            end = startStr.length() + index;
         }
         SpannableStringBuilder middleStr = (SpannableStringBuilder) getText().subSequence(start, end);
         richStr = RichParserManager.getManager().getLastRichItem4Spannable(middleStr);

@@ -8,8 +8,6 @@ import android.util.Pair;
  */
 public interface IRichParser4Local {
 
-    boolean containsRichSpannable(SpannableStringBuilder ssb);
-
     Pair<Integer, SpannableStringBuilder> getFirstRichSpannable(SpannableStringBuilder ssb);
 
     Pair<Integer, SpannableStringBuilder>  getLastRichSpannable(SpannableStringBuilder ssb);

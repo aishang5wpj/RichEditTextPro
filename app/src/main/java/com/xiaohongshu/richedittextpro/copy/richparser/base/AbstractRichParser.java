@@ -48,45 +48,6 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
     ////////////////////////////////////////////////////////// 下面是为Local提供的各种操作 ///////////////////////////////////////////////////////////////
 
     /**
-     * 富文本中包含ImageSpan或者ColorSpan并不说明包含一个完整的富文本
-     * ,有可能这个富文本被截断了(用户点击富文本时,光标落在富文本中间时的情况)
-     *
-     * @param spannableStringBuilder
-     * @return
-     */
-    @Override
-    public boolean containsRichSpannable(SpannableStringBuilder spannableStringBuilder) {
-
-        SpannableStringBuilder ssb = spannableStringBuilder;
-        ImageSpan[] imageSpen = ssb.getSpans(0, ssb.length(), ImageSpan.class);
-        if (null != imageSpen && imageSpen.length > 0) {
-            for (ImageSpan imageSpan : imageSpen) {
-
-                int imageStart = ssb.getSpanStart(imageSpan);
-                ForegroundColorSpan[] colorSpen = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
-                if (colorSpen != null && colorSpen.length > 0) {
-                    for (ForegroundColorSpan colorSpan : colorSpen) {
-
-                        //从ColorSpan中解析出来的内容信息
-                        int colorStart = ssb.getSpanStart(colorSpan);
-                        int colorEnd = ssb.getSpanEnd(colorSpan);
-                        CharSequence charSequence = ssb.subSequence(colorStart, colorEnd);
-                        //ImageSpan中包含的content信息
-                        String source = imageSpan.getSource();
-                        RichItemBean itemBean = RichItemBean.parseRichItem(source);
-                        String richStr = "#" + itemBean.getContent();
-                        //如果两个信息相等,说明这是一个完整的富文本
-                        if (TextUtils.equals(richStr, charSequence)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * 可能拿到不完整的富文本!!
      * 用ImageSpan中的source转成RichItemBean,来判断是不完整的富文本
      *
@@ -174,31 +135,6 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
     }
 
     ////////////////////////////////////////////////////////// 下面是为Server提供的各种操作 ///////////////////////////////////////////////////////////////
-
-    /**
-     * 除了匹配正则表达式,而且还要满足匹配到的富文本在服务器的富文本列表中
-     * ,如果匹配到的富文本在服务器中不存在,则不允许高亮
-     *
-     * @param str
-     * @return
-     */
-    @Override
-    public boolean containsRichStr4Server(String str) {
-        Pattern pattern = Pattern.compile(getPattern4Server());
-        Matcher matcher = pattern.matcher(str);
-        while (matcher.find()) {
-
-            String richStr = matcher.group();
-            String type = getType4Server();
-            String content = getContent4Server(richStr);
-
-            RichItemBean richItemBean = RichItemBean.createRichItem(type, content);
-            if (mTargetRichItems.isEmpty() || mTargetRichItems.contains(richItemBean)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     @Override
     public Pair<Integer, String> getFirstRichStr4Server(String str) {
