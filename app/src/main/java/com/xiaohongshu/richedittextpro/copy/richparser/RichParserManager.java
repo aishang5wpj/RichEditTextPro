@@ -69,19 +69,19 @@ public class RichParserManager {
             return new SpannableStringBuilder(str);
         }
         String tempStr = str;
-        String richStr = getFirstRichItem4Str(tempStr);
+        Pair<Integer, String> firstRichStr = getFirstRichItem4Str(tempStr);
         SpannableStringBuilder ssb = new SpannableStringBuilder();
-        while (!TextUtils.isEmpty(richStr)) {
+        while (firstRichStr != null) {
 
             //start string
-            int index = tempStr.indexOf(richStr);
+            int index = firstRichStr.first;
             String startStr = tempStr.substring(0, index);
             ssb.append(startStr);
             //rich string
-            ssb.append(formatStr2Spannable(context, richStr));
+            ssb.append(formatStr2Spannable(context, firstRichStr.second));
             //循环
-            tempStr = tempStr.substring(index + richStr.length(), tempStr.length());
-            richStr = getFirstRichItem4Str(tempStr);
+            tempStr = tempStr.substring(index + firstRichStr.second.length());
+            firstRichStr = getFirstRichItem4Str(tempStr);
         }
         //end String
         ssb.append(tempStr);
@@ -101,19 +101,19 @@ public class RichParserManager {
             return "";
         }
         SpannableStringBuilder tempStr = str;
-        SpannableStringBuilder richStr = getFirstRichItem4Spannable(tempStr);
+        Pair<Integer, SpannableStringBuilder>  firstRichSpan = getFirstRichItem4Spannable(tempStr);
         StringBuilder stringBuilder = new StringBuilder();
-        while (!TextUtils.isEmpty(richStr)) {
+        while (firstRichSpan != null) {
 
             //start string
-            int index = tempStr.toString().indexOf(richStr.toString());
+            int index = firstRichSpan.first;
             String startStr = tempStr.subSequence(0, index).toString();
             stringBuilder.append(startStr);
             //rich string
-            stringBuilder.append(formatSpannable2Str(richStr));
+            stringBuilder.append(formatSpannable2Str(firstRichSpan.second));
             //循环
-            tempStr = (SpannableStringBuilder) tempStr.subSequence(index + richStr.length(), tempStr.length());
-            richStr = getFirstRichItem4Spannable(tempStr);
+            tempStr = (SpannableStringBuilder) tempStr.subSequence(index + firstRichSpan.second.length(), tempStr.length());
+            firstRichSpan = getFirstRichItem4Spannable(tempStr);
         }
         //end String
         stringBuilder.append(tempStr);
@@ -127,7 +127,7 @@ public class RichParserManager {
      * @param targetStr
      * @return
      */
-    private String getFirstRichItem4Str(String targetStr) {
+    private Pair<Integer, String> getFirstRichItem4Str(String targetStr) {
 
         final String str = targetStr;
         int index = Integer.MAX_VALUE;
@@ -140,7 +140,7 @@ public class RichParserManager {
                 result = temp;
             }
         }
-        return result == null ? "" : result.second;
+        return result;
     }
 
     /**
@@ -149,7 +149,7 @@ public class RichParserManager {
      * @param ssb
      * @return
      */
-    public SpannableStringBuilder getFirstRichItem4Spannable(SpannableStringBuilder ssb) {
+    public Pair<Integer, SpannableStringBuilder> getFirstRichItem4Spannable(SpannableStringBuilder ssb) {
 
         final SpannableStringBuilder str = ssb;
         int index = Integer.MAX_VALUE;
@@ -162,7 +162,7 @@ public class RichParserManager {
                 result = temp;
             }
         }
-        return result == null ? new SpannableStringBuilder() : result.second;
+        return result;
     }
 
     /**
