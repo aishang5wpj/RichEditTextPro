@@ -13,16 +13,17 @@ public class RichItemBean {
     private String mExtra;
 
     private RichItemBean() {
-        this("", "");
+        this("", "", "");
     }
 
-    private RichItemBean(String type, String content) {
+    private RichItemBean(String type, String extra, String content) {
         mType = type;
         mContent = content;
+        mExtra = extra;
     }
 
-    public static RichItemBean createRichItem(String type, String content) {
-        RichItemBean itemBean = new RichItemBean(type, content);
+    public static RichItemBean createRichItem(String type, String extra, String content) {
+        RichItemBean itemBean = new RichItemBean(type, content, extra);
         return itemBean;
     }
 
@@ -34,7 +35,8 @@ public class RichItemBean {
         }
         String[] strArr = str.split(FLAG);
         itemBean.mType = strArr[0];
-        itemBean.mContent = strArr[1];
+        itemBean.mExtra = strArr[1];
+        itemBean.mContent = strArr[2];
         return itemBean;
     }
 
@@ -52,7 +54,7 @@ public class RichItemBean {
 
     @Override
     public String toString() {
-        return String.format("%s%s%s%s%s", mType, FLAG, mContent, FLAG, mExtra);
+        return String.format("%s%s%s%s%s", mType, FLAG, mExtra, FLAG, mContent);
     }
 
     @Override

@@ -9,13 +9,13 @@ import com.xiaohongshu.richedittextpro.copy.richparser.base.OnSpannableClickList
 /**
  * Created by wupengjian on 17/1/17.
  */
-public class SimpleRichParser extends AbstractRichParser {
+public class PoiRichParser extends NormalRichParser {
 
-    public SimpleRichParser() {
+    public PoiRichParser() {
         this(null);
     }
 
-    public SimpleRichParser(OnSpannableClickListener listener) {
+    public PoiRichParser(OnSpannableClickListener listener) {
         super(listener);
     }
 
@@ -30,12 +30,7 @@ public class SimpleRichParser extends AbstractRichParser {
     }
 
     @Override
-    public String getPattern4Server() {
-        return "#[^#\\[\\]]{1,}#";
-    }
-
-    @Override
     public String getType4Server() {
-        return "";
+        return "位置";
     }
 }

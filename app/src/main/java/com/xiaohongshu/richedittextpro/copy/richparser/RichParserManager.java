@@ -2,12 +2,10 @@ package com.xiaohongshu.richedittextpro.copy.richparser;
 
 import android.content.Context;
 import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
 import android.util.Pair;
 
 import com.xiaohongshu.richedittextpro.copy.richparser.base.AbstractRichParser;
 import com.xiaohongshu.richedittextpro.copy.richparser.base.IRichParser4Local;
-import com.xiaohongshu.richedittextpro.copy.richparser.base.IRichParser4Server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,23 +67,22 @@ public class RichParserManager {
     public String parseSpannable2Str(SpannableStringBuilder spannableStringBuilder) {
         final SpannableStringBuilder str = spannableStringBuilder;
         Object[] firstRichSpan = getFirstRichItem4Spannable(str);
-        if (firstRichSpan[0] == null) {
+        if (firstRichSpan == null) {
             return "";
         }
         SpannableStringBuilder tempStr = str;
         StringBuilder stringBuilder = new StringBuilder();
-        while (firstRichSpan[0] != null) {
+        while (firstRichSpan != null) {
 
             //start string
-            int index = (int) firstRichSpan[0];
+            int index = (int) firstRichSpan[2];
             String startStr = tempStr.subSequence(0, index).toString();
             stringBuilder.append(startStr);
             //rich string
-            SpannableStringBuilder richStr = (SpannableStringBuilder) firstRichSpan[1];
-            AbstractRichParser richParser = (AbstractRichParser) firstRichSpan[2];
-            stringBuilder.append(richParser.parseSpannable2Str(richStr));
+            stringBuilder.append(firstRichSpan[0]);
             //循环
-            tempStr = (SpannableStringBuilder) tempStr.subSequence(index + richStr.length(), tempStr.length());
+            int lenght = (int) firstRichSpan[3];
+            tempStr = (SpannableStringBuilder) tempStr.subSequence(index + lenght, tempStr.length());
             firstRichSpan = getFirstRichItem4Spannable(tempStr);
         }
         //end String
@@ -94,44 +91,14 @@ public class RichParserManager {
         return stringBuilder.toString();
     }
 
-    /**
-     * 从String中取出第一个富文本
-     *
-     * @param targetStr
-     * @return
-     */
     private Object[] getFirstRichItem4Str(String targetStr) {
 
         final String str = targetStr;
         int index = Integer.MAX_VALUE;
         Object[] result = new Object[3];
-        for (AbstractRichParser richPaser : mParserList) {
-
-            Pair<Integer, String> temp = richPaser.getFirstRichStr4Server(str);
-            if (temp != null && temp.first < index && temp.first != -1) {
-                index = temp.first;
-                result[0] = temp.first;
-                result[1] = temp.second;
-                result[2] = richPaser;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * 从String中取出第一个富文本
-     *
-     * @param ssb
-     * @return
-     */
-    public Object[] getFirstRichItem4Spannable(SpannableStringBuilder ssb) {
-
-        final SpannableStringBuilder str = ssb;
-        int index = Integer.MAX_VALUE;
-        Object[] result = new Object[3];
         for (AbstractRichParser richParser : mParserList) {
 
-            Pair<Integer, SpannableStringBuilder> temp = richParser.getFirstRichSpannable(str);
+            Pair<Integer, String> temp = richParser.getFirstRichStr4Server(str);
             if (temp != null && temp.first < index && temp.first != -1) {
                 index = temp.first;
                 result[0] = temp.first;
@@ -142,26 +109,29 @@ public class RichParserManager {
         return result;
     }
 
-    /**
-     * 从String中取出第一个富文本
-     *
-     * @param ssb
-     * @return
-     */
+    public Object[] getFirstRichItem4Spannable(SpannableStringBuilder ssb) {
+        for (AbstractRichParser richParser : mParserList) {
+            Object[] result = richParser.parseFirstRichSpannable(ssb);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
     public SpannableStringBuilder getLastRichItem4Spannable(SpannableStringBuilder ssb) {
 
         final SpannableStringBuilder str = ssb;
-        int index = -1;
-        Pair<Integer, SpannableStringBuilder> result = null;
+        Object[] result = null;
         for (IRichParser4Local richParser : mParserList) {
 
-            Pair<Integer, SpannableStringBuilder> temp = richParser.getLastRichSpannable(str);
-            if (temp != null && temp.first > index) {
-                index = temp.first;
+            Object[] temp = richParser.getLastRichSpannable(str);
+            if (temp != null) {
                 result = temp;
+                break;
             }
         }
-        return result == null ? new SpannableStringBuilder() : result.second;
+        return result == null ? new SpannableStringBuilder() : (SpannableStringBuilder) result[2];
     }
 
     public void registerParser(AbstractRichParser parser) {

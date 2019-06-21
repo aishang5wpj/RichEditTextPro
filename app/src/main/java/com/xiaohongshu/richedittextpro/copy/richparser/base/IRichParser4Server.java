@@ -13,5 +13,5 @@ public interface IRichParser4Server {
 
     String getType4Server();
 
-    String getContent4Server(String str);
+    Pair<String, String> parseInfo4Server(String str);
 }
