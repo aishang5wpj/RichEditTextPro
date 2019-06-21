@@ -195,7 +195,7 @@ public class RichEditTextPro extends EditText implements View.OnKeyListener {
         int end = getText().length();
         //如果点击的是最后面的话题,则richStr可能为空
         if (firstRichSpan != null) {
-            int index = (int) firstRichSpan[0];
+            int index = (int) firstRichSpan[2];
             end = startStr.length() + index;
         }
         SpannableStringBuilder middleStr = (SpannableStringBuilder) getText().subSequence(start, end);
