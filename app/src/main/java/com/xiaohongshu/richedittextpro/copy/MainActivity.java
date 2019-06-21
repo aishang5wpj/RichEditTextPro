@@ -7,6 +7,7 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,12 +17,8 @@ import com.xiaohongshu.richedittextpro.R;
 import com.xiaohongshu.richedittextpro.copy.richparser.RichParserManager;
 import com.xiaohongshu.richedittextpro.copy.richparser.base.AbstractRichParser;
 import com.xiaohongshu.richedittextpro.copy.richparser.base.OnSpannableClickListener;
-import com.xiaohongshu.richedittextpro.copy.richparser.base.RichItemBean;
 import com.xiaohongshu.richedittextpro.copy.richparser.strategy.NormalRichParser;
-import com.xiaohongshu.richedittextpro.copy.richparser.strategy.SimpleRichParser;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.xiaohongshu.richedittextpro.copy.richparser.strategy.PoiRichParser;
 
 public class MainActivity extends AppCompatActivity implements OnSpannableClickListener {
 
@@ -40,27 +37,17 @@ public class MainActivity extends AppCompatActivity implements OnSpannableClickL
         mTvServer2Local.setMovementMethod(LinkMovementMethod.getInstance());
         mTvServer2Local.setHighlightColor(getResources().getColor(android.R.color.transparent));
 
-        RichParserManager.getManager().registerParser(
-                new SimpleRichParser(this)
-                        .setRichItems(createSimpleRichItemList()));
-        RichParserManager.getManager().registerParser(
-                new NormalRichParser(this)
-                        .setRichItems(createNormalRichItemList()));
-    }
+        RichParserManager.getManager().registerParser(new PoiRichParser(this));
+        RichParserManager.getManager().registerParser(new NormalRichParser(this));
 
-    private List<RichItemBean> createSimpleRichItemList() {
-        List<RichItemBean> richItemBeen = new ArrayList<>();
-        richItemBeen.add(RichItemBean.createRichItem("", "fade"));
-        richItemBeen.add(RichItemBean.createRichItem("", "try"));
-        return richItemBeen;
-    }
-
-    private List<RichItemBean> createNormalRichItemList() {
-        List<RichItemBean> richItemBeen = new ArrayList<>();
-        richItemBeen.add(RichItemBean.createRichItem("音乐", "我以为"));
-        richItemBeen.add(RichItemBean.createRichItem("音乐", "会长大的幸福"));
-        richItemBeen.add(RichItemBean.createRichItem("音乐", "带空格 的话题"));
-        return richItemBeen;
+        String jsonStr = "" +
+                "{" +
+                "    \"id\":1," +
+                "    \"latitude\":116.46," +
+                "    \"longitude\":39.92" +
+                "}";
+        String text = String.format("#[位置][%s]测试#", jsonStr);
+        mEditText.setText(text);
     }
 
     public void server2Local(View view) {
@@ -98,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements OnSpannableClickL
     }
 
     @Override
-    public void onClick(AbstractRichParser parser, String type, String content, String sourceStr) {
+    public void onClick(AbstractRichParser parser, String type, Pair<String, String> content, String sourceStr) {
         Toast.makeText(this, String.format("sourceStr: %s,type: %s,content: %s", sourceStr, type, content), Toast.LENGTH_SHORT).show();
     }
 }

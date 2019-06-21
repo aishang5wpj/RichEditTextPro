@@ -10,18 +10,20 @@ public class RichItemBean {
     private static final String FLAG = "::";
     private String mType;
     private String mContent;
+    private String mExtra;
 
     private RichItemBean() {
-        this("", "");
+        this("", "", "");
     }
 
-    private RichItemBean(String type, String content) {
+    private RichItemBean(String type, String extra, String content) {
         mType = type;
         mContent = content;
+        mExtra = extra;
     }
 
-    public static RichItemBean createRichItem(String type, String content) {
-        RichItemBean itemBean = new RichItemBean(type, content);
+    public static RichItemBean createRichItem(String type, String extra, String content) {
+        RichItemBean itemBean = new RichItemBean(type, content, extra);
         return itemBean;
     }
 
@@ -33,7 +35,8 @@ public class RichItemBean {
         }
         String[] strArr = str.split(FLAG);
         itemBean.mType = strArr[0];
-        itemBean.mContent = strArr[1];
+        itemBean.mExtra = strArr[1];
+        itemBean.mContent = strArr[2];
         return itemBean;
     }
 
@@ -45,9 +48,13 @@ public class RichItemBean {
         return mContent;
     }
 
+    public String getExtra() {
+        return mExtra;
+    }
+
     @Override
     public String toString() {
-        return String.format("%s%s%s", mType, FLAG, mContent);
+        return String.format("%s%s%s%s%s", mType, FLAG, mExtra, FLAG, mContent);
     }
 
     @Override
@@ -55,7 +62,8 @@ public class RichItemBean {
         if (o instanceof RichItemBean) {
             RichItemBean itemBean = (RichItemBean) o;
             return TextUtils.equals(mType, itemBean.getType())
-                    && TextUtils.equals(mContent, itemBean.getContent());
+                    && TextUtils.equals(mContent, itemBean.getContent())
+                    && TextUtils.equals(mExtra, itemBean.getExtra());
         }
         return super.equals(o);
     }

@@ -1,21 +1,17 @@
 package com.xiaohongshu.richedittextpro.copy.richparser.base;
 
+import android.util.Pair;
+
 /**
  * Created by wupengjian on 17/1/17.
  */
 public interface IRichParser4Server {
 
-    void setString(String str);
-
     String getPattern4Server();
 
-    boolean containsRichStr4Server();
-
-    String getFirstRichStr4Server();
-
-    int getFirstRichStrIndex4Server();
+    Pair<Integer, String> getFirstRichStr4Server(String str);
 
     String getType4Server();
 
-    String getContent4Server(String str);
+    Pair<String, String> parseInfo4Server(String str);
 }

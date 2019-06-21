@@ -7,15 +7,7 @@ import android.text.SpannableStringBuilder;
  */
 public interface IRichParser4Local {
 
-    void setSpannable(SpannableStringBuilder ssb);
+    Object[] parseFirstRichSpannable(SpannableStringBuilder ssb);
 
-    boolean containsRichSpannable();
-
-    SpannableStringBuilder getFirstRichSpannable();
-
-    int getFirstIndex4RichSpannable();
-
-    SpannableStringBuilder getLastRichSpannable();
-
-    int getLastIndex4RichSpannable();
+    Object[]  getLastRichSpannable(SpannableStringBuilder ssb);
 }
