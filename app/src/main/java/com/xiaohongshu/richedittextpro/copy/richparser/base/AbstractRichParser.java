@@ -63,6 +63,13 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
             ForegroundColorSpan[] colorSpans = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
             int start = ssb.getSpanStart(colorSpans[0]);
             int end = ssb.getSpanEnd(colorSpans[0]);
+            // 判断传进来的富文本是不是完整的富文本，在输入框中光标移到富文本中间后，得到的富文本不是完整的富文本
+            Pair<String, String> sourceInfo = parseInfo4Server(source);
+            final String str = String.format("#%s", sourceInfo.second);
+            final String richSpanStr = ssb.subSequence(start, end).toString();
+            if (!TextUtils.equals(str, richSpanStr)) {
+                continue;
+            }
             Object[] result = new Object[4];
             result[0] = richSpan.second;
             result[1] = ssb.subSequence(start, end);
@@ -92,8 +99,15 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
             }
             int imageStart = ssb.getSpanStart(imageSpen[i]);
             ForegroundColorSpan[] colorSpans = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
-            int start = ssb.getSpanStart(colorSpans[colorSpans.length - 1]);
-            int end = ssb.getSpanEnd(colorSpans[colorSpans.length - 1]);
+            int start = ssb.getSpanStart(colorSpans[0]);
+            int end = ssb.getSpanEnd(colorSpans[0]);
+            // 判断传进来的富文本是不是完整的富文本，在输入框中光标移到富文本中间后，得到的富文本不是完整的富文本
+            Pair<String, String> sourceInfo = parseInfo4Server(source);
+            final String str = String.format("#%s", sourceInfo.second);
+            final String richSpanStr = ssb.subSequence(start, end).toString();
+            if (!TextUtils.equals(str, richSpanStr)) {
+                continue;
+            }
             Object[] result = new Object[4];
             result[0] = richSpan.second;
             result[1] = ssb.subSequence(start, end);
