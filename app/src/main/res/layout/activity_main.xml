@@ -10,7 +10,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".spannable.MainActivity">
 
+    <EditText
+        android:id="@+id/edittextNormal"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:gravity="left|top" />
+
     <com.xiaohongshu.richedittextpro.copy.RichEditTextPro
+        android:id="@+id/edittextPro"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:gravity="left|top" />

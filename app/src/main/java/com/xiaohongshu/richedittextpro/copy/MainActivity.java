@@ -23,6 +23,7 @@ import com.xiaohongshu.richedittextpro.copy.richparser.strategy.PoiRichParser;
 public class MainActivity extends AppCompatActivity implements OnSpannableClickListener {
 
     private EditText mEditText;
+    private EditText mEditTextNormal, mEditTextPro;
     private TextView mTvServer2Local, mTvLocal2Server;
 
     @Override
@@ -31,6 +32,8 @@ public class MainActivity extends AppCompatActivity implements OnSpannableClickL
         setContentView(R.layout.activity_main);
 
         mEditText = (EditText) findViewById(R.id.edittext);
+        mEditTextNormal = (EditText) findViewById(R.id.edittextNormal);
+        mEditTextPro = (EditText) findViewById(R.id.edittextPro);
         mTvServer2Local = (TextView) findViewById(R.id.server2Local);
         mTvLocal2Server = (TextView) findViewById(R.id.local2Server);
 
@@ -53,15 +56,18 @@ public class MainActivity extends AppCompatActivity implements OnSpannableClickL
 
         builder.append("普通的一句话没有富文本");
 
-         jsonStr = "" +
+        jsonStr = "" +
                 "{" +
                 "    \"id\":1," +
                 "    \"latitude\":116.46," +
                 "    \"longitude\":39.92" +
                 "}";
-         text = String.format("#[位置][%s]测试#", jsonStr);
+        text = String.format("#[位置][%s]测试#", jsonStr);
 
         builder.append(text);
+
+        mEditTextNormal.setText(RichParserManager.getManager().parseStr2Spannable(this, builder.toString()));
+        mEditTextPro.setText(RichParserManager.getManager().parseStr2Spannable(this, builder.toString()));
 
         mEditText.setText(builder);
     }
