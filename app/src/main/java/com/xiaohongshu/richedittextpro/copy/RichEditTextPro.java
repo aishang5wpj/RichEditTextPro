@@ -88,7 +88,7 @@ public class RichEditTextPro extends EditText implements View.OnKeyListener {
         int startPos = getSelectionStart();
         final SpannableStringBuilder ssb = (SpannableStringBuilder) getText().subSequence(0, startPos);
         final SpannableStringBuilder lastSSB = RichParserManager.getManager().getLastRichItem4Spannable(ssb);
-        if (lastSSB == null) {
+        if (TextUtils.isEmpty(lastSSB)) {
             return false;
         }
         String lastTopic = lastSSB.toString();
