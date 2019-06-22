@@ -52,22 +52,25 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
         }
         IMAGE_SPAN_COMPARATOR.setSsb(ssb);
         Arrays.sort(imageSpen, IMAGE_SPAN_COMPARATOR);
-
-        String source = imageSpen[0].getSource();
-        Pair<Integer, String> richSpan = getFirstRichStr4Server(source);
-        if (richSpan == null) {
-            return null;
+        // 还是得遍历全部span，找到可以处理的span，否则如果是一个emoji等处理不了的span，则无法进行下一步了
+        for (ImageSpan imageSpan : imageSpen) {
+            String source = imageSpan.getSource();
+            Pair<Integer, String> richSpan = getFirstRichStr4Server(source);
+            if (richSpan == null) {
+                return null;
+            }
+            int imageStart = ssb.getSpanStart(imageSpan);
+            ForegroundColorSpan[] colorSpans = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
+            int start = ssb.getSpanStart(colorSpans[0]);
+            int end = ssb.getSpanEnd(colorSpans[0]);
+            Object[] result = new Object[4];
+            result[0] = richSpan.second;
+            result[1] = ssb.subSequence(start, end);
+            result[2] = start;
+            result[3] = end - start;
+            return result;
         }
-        int imageStart = ssb.getSpanStart(imageSpen[0]);
-        ForegroundColorSpan[] colorSpans = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
-        int start = ssb.getSpanStart(colorSpans[0]);
-        int end = ssb.getSpanEnd(colorSpans[0]);
-        Object[] result = new Object[4];
-        result[0] = richSpan.second;
-        result[1] = ssb.subSequence(start, end);
-        result[2] = start;
-        result[3] = end - start;
-        return result;
+        return null;
     }
 
     @Override
@@ -80,21 +83,25 @@ public abstract class AbstractRichParser implements IRichParser4Local, IRichPars
         IMAGE_SPAN_COMPARATOR.setSsb(ssb);
         Arrays.sort(imageSpen, IMAGE_SPAN_COMPARATOR);
 
-        String source = imageSpen[imageSpen.length - 1].getSource();
-        Pair<Integer, String> richSpan = getFirstRichStr4Server(source);
-        if (richSpan == null) {
-            return null;
+        // 还是得遍历全部span，找到可以处理的span，否则如果是一个emoji等处理不了的span，则无法进行下一步了
+        for (int i = imageSpen.length - 1; i >= 0; i--) {
+            String source = imageSpen[i].getSource();
+            Pair<Integer, String> richSpan = getFirstRichStr4Server(source);
+            if (richSpan == null) {
+                return null;
+            }
+            int imageStart = ssb.getSpanStart(imageSpen[i]);
+            ForegroundColorSpan[] colorSpans = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
+            int start = ssb.getSpanStart(colorSpans[colorSpans.length - 1]);
+            int end = ssb.getSpanEnd(colorSpans[colorSpans.length - 1]);
+            Object[] result = new Object[4];
+            result[0] = richSpan.second;
+            result[1] = ssb.subSequence(start, end);
+            result[2] = start;
+            result[3] = end - start;
+            return result;
         }
-        int imageStart = ssb.getSpanStart(imageSpen[imageSpen.length - 1]);
-        ForegroundColorSpan[] colorSpans = ssb.getSpans(imageStart, ssb.length(), ForegroundColorSpan.class);
-        int start = ssb.getSpanStart(colorSpans[colorSpans.length - 1]);
-        int end = ssb.getSpanEnd(colorSpans[colorSpans.length - 1]);
-        Object[] result = new Object[4];
-        result[0] = richSpan.second;
-        result[1] = ssb.subSequence(start, end);
-        result[2] = start;
-        result[3] = end - start;
-        return result;
+        return null;
     }
 
     ////////////////////////////////////////////////////////// 下面是为Server提供的各种操作 ///////////////////////////////////////////////////////////////

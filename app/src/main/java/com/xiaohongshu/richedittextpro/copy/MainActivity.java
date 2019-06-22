@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnSpannableClickL
         RichParserManager.getManager().registerParser(new PoiRichParser(this));
         RichParserManager.getManager().registerParser(new NormalRichParser(this));
 
+        StringBuilder builder = new StringBuilder();
         String jsonStr = "" +
                 "{" +
                 "    \"id\":1," +
@@ -47,7 +48,22 @@ public class MainActivity extends AppCompatActivity implements OnSpannableClickL
                 "    \"longitude\":39.92" +
                 "}";
         String text = String.format("#[位置][%s]测试#", jsonStr);
-        mEditText.setText(text);
+
+        builder.append(text);
+
+        builder.append("普通的一句话没有富文本");
+
+         jsonStr = "" +
+                "{" +
+                "    \"id\":1," +
+                "    \"latitude\":116.46," +
+                "    \"longitude\":39.92" +
+                "}";
+         text = String.format("#[位置][%s]测试#", jsonStr);
+
+        builder.append(text);
+
+        mEditText.setText(builder);
     }
 
     public void server2Local(View view) {

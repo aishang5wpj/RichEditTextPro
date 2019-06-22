@@ -110,13 +110,23 @@ public class RichParserManager {
     }
 
     public Object[] getFirstRichItem4Spannable(SpannableStringBuilder ssb) {
+        Object[] result = null;
         for (AbstractRichParser richParser : mParserList) {
-            Object[] result = richParser.parseFirstRichSpannable(ssb);
-            if (result != null) {
-                return result;
+            Object[] temp = richParser.parseFirstRichSpannable(ssb);
+            if (temp == null) {
+                continue;
+            }
+            if (result == null) {
+                result = temp;
+            } else {
+                int index = (int) result[3];
+                int tempIndex = (int) temp[3];
+                if (tempIndex <= index) {
+                    result = temp;
+                }
             }
         }
-        return null;
+        return result;
     }
 
     public SpannableStringBuilder getLastRichItem4Spannable(SpannableStringBuilder ssb) {
@@ -131,7 +141,7 @@ public class RichParserManager {
                 break;
             }
         }
-        return result == null ? new SpannableStringBuilder() : (SpannableStringBuilder) result[2];
+        return result == null ? new SpannableStringBuilder() : (SpannableStringBuilder) result[1];
     }
 
     public void registerParser(AbstractRichParser parser) {
