@@ -11,6 +11,7 @@ import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.xiaohongshu.richedittextpro.copy.richparser.RichParserManager;
 
@@ -133,6 +134,14 @@ public class RichEditTextPro extends EditText implements View.OnKeyListener {
                 .append(endStr);
         setText(ssb);
         setSelection(start + richText.length());
+    }
+
+    @Override
+    public void setText(CharSequence text, BufferType type) {
+        super.setText(text, type);
+        if (!TextUtils.isEmpty(text)) {
+            setSelection(text.length());
+        }
     }
 
     @Override

@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements OnSpannableClickL
 
         mEditTextNormal.setText(RichParserManager.getManager().parseStr2Spannable(this, builder.toString()));
         mEditTextPro.setText(RichParserManager.getManager().parseStr2Spannable(this, builder.toString()));
+        mEditTextPro.requestFocus();
 
         mEditText.setText(builder);
     }
